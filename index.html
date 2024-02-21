@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="shortcut icon" href="#" />
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/1.0.2/chartjs-plugin-annotation.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script
+      type="text/javascript"
+      src="https://cdn.canvasjs.com/canvasjs.min.js"
+    ></script>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="main">
+      <div class="menu">
+        <ul>
+          <li>
+            <span>Atribute</span>
+            <select>
+              <option>Align</option>
+              <option>BU</option>
+              <option>R2H Align</option>
+            </select>
+          </li>
+          <li><span>From</span> <input type="date" /></li>
+          <li><span>To</span> <input type="date" /></li>
+          <li><span>Workorder</span> <input type="text" /></li>
+          <li><span>Size</span> <input type="text" /></li>
+          <li><span>LSL</span> <input type="text" /></li>
+          <li><span>USL</span> <input type="text" /></li>
+          <li><button type="submit" id="submit">CALCULATION</button></li>
+        </ul>
+      </div>
+      <div class="chart">
+        <div class="main_chart">
+          <div class="chart-container1">
+            <div class="chart1">
+              <!-- <h2>Oil Tank</h2> -->
+              <div id="chartContainer1"></div>
+            </div>
+            <table>
+              <tr>
+                <th>USL</th>
+                <td></td>
+              </tr>
+              <tr>
+                <th>LSL</th>
+                <td></td>
+              </tr>
+              <tr>
+                <th>SIZE</th>
+                <td></td>
+              </tr>
+              <tr>
+                <th>Mean</th>
+                <td></td>
+              </tr>
+              <tr>
+                <th>StDev</th>
+                <td></td>
+              </tr>
+              <tr>
+                <th>Cpk</th>
+                <td></td>
+              </tr>
+              <tr>
+                <th>zUSL</th>
+                <td></td>
+              </tr>
+              <tr>
+                <th>zLSL</th>
+                <td></td>
+              </tr>
+              <tr>
+                <th>Out of USL</th>
+                <td></td>
+              </tr>
+
+              <tr>
+                <th>Out of LSL</th>
+                <td></td>
+              </tr>
+            </table>
+          </div>
+          <div class="chart-container2">
+            <div class="chart2"><div id="chartContainer2"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    
+    // Chart 1
+
+    const config1 = {
+      width: 1050,
+      height: 550,
+      animationEnabled: true,
+      title: {
+        text: "OIL_Tank",
+      },
+      axisY: {
+        minimum: 0,
+      },
+      data: [
+        {
+          type: "column",
+          showInLegend: false,
+          dataPoints: [],
+        },
+        {
+          type: "spline",
+
+          axisYType: "secondary",
+          showInLegend: false,
+          name: "CPK",
+          dataPoints: [],
+          lineTension: 0.5,
+          markerSize: 0,
+          lineCurveType: "smooth",
+          mouseover: function (e) {
+            if (e.dataPoint.marker) {
+              e.dataPoint.marker.remove(); // Xóa điểm dữ liệu khi hover vào
+            }
+          },
+        },
+        // usl
+        {
+          type: "line",
+          showInLegend: false,
+          dataPoints: [],
+          lineTension: 0.5,
+          markerSize: 0,
+          lineCurveType: "smooth",
+        },
+        // lsl
+        {
+          type: "line",
+          showInLegend: false,
+          dataPoints: [],
+          lineTension: 0.5,
+          markerSize: 0,
+          lineCurveType: "smooth",
+        },
+      ],
+    };
+
+    // Chart 2
+
+    const config2 = {
+      width: 1050,
+      height: 550,
+      animationEnabled: true,
+      title: {
+        text: "OIL_Tank",
+      },
+      axisY: {
+        minimum: 0,
+      },
+      axisX: {
+        minimum: 0,
+        tickLength: 0,
+      },
+      data: [
+        {
+          type: "line",
+          showInLegend: false,
+          color: "yellow",
+          name: "CPK",
+          dataPoints: [],
+          lineTension: 0.5,
+          markerSize: 0,
+          lineCurveType: "smooth",
+        },
+        {
+          type: "line",
+          showInLegend: false,
+          color: "red",
+          name: "USL",
+          dataPoints: [],
+          lineTension: 0.5,
+          markerSize: 0,
+          lineCurveType: "smooth",
+        },
+        {
+          type: "line",
+          showInLegend: false,
+          name: "Mean",
+          color: "green",
+          dataPoints: [],
+          lineTension: 0.5,
+          markerSize: 0,
+          lineCurveType: "smooth",
+        },
+        {
+          type: "line",
+          showInLegend: false,
+          color: "blue",
+          name: "LSL",
+          dataPoints: [],
+          lineTension: 0.5,
+          markerSize: 0,
+          lineCurveType: "smooth",
+        },
+      ],
+    };
+
+    var chart1 = new CanvasJS.Chart("chartContainer1", config1);
+    var chart2 = new CanvasJS.Chart("chartContainer2", config2);
+
+    var submit = document.querySelector("#submit");
+
+    function reloadChart() {
+      chart1.render();
+      chart2.render();
+      // alert("Hi em");
+    }
+
+    submit.addEventListener("click", function () {
+      // chart1.render();
+      // chart2.render();
+      setInterval(reloadChart, 2000);
+    });
+    
+
+
+   
+
+    // $.ajax({
+    //   type: "GET",
+    //   url: "http://10.224.84.127:8089/api/BuildCPK/type=OIL_TANK&day=20240215&size=10",
+    //   success: function (obj) {
+    //     var index = 1;
+    //     const contentTable = document.querySelectorAll("td");
+    //     console.log(obj);
+
+    //     //CHART 1
+
+    //     // table
+    //     for (var prop in obj.myTable) {
+    //       if (obj.myTable.hasOwnProperty(prop)) {
+    //         contentTable[index - 1].innerHTML = obj.myTable[prop];
+    //         index++;
+    //       }
+    //     }
+
+    //     // column
+    //     for (var i in obj.myColumnChart.coordinates) {
+    //       if (obj.myColumnChart.coordinates.hasOwnProperty(i)) {
+    //         config1.data[0].dataPoints.push(obj.myColumnChart.coordinates[i]);
+    //       }
+    //     }
+
+    //     // line
+    //     for (var i in obj.myLineOfColumnChart.coordinates) {
+    //       if (obj.myLineOfColumnChart.coordinates.hasOwnProperty(i)) {
+    //         config1.data[1].dataPoints.push(
+    //           obj.myLineOfColumnChart.coordinates[i]
+    //         );
+    //       }
+    //     }
+
+    //     // usl
+    //     var newMyChartUSL = obj.myUSLOfXbarChart.coordinates.map(function (
+    //       item
+    //     ) {
+    //       return { x: item.y, y: item.x };
+    //     });
+    //     for (let i in obj.myUSLOfXbarChart.coordinates) {
+    //       if (obj.myUSLOfXbarChart.coordinates.hasOwnProperty(i)) {
+    //         config1.data[2].dataPoints.push(newMyChartUSL[i]);
+    //       }
+    //     }
+
+    //     // lsl
+    //     var newMyChartLSL = obj.myLSLOfXbarChart.coordinates.map(function (
+    //       item
+    //     ) {
+    //       return { x: item.y, y: item.x };
+    //     });
+    //     for (let i in obj.myLSLOfXbarChart.coordinates) {
+    //       if (obj.myLSLOfXbarChart.coordinates.hasOwnProperty(i)) {
+    //         config1.data[3].dataPoints.push(newMyChartLSL[i]);
+    //       }
+    //     }
+
+    //     // CHART 2
+
+    //     // CPK
+    //     for (var i in obj.myValueXbarChart.coordinates) {
+    //       if (obj.myValueXbarChart.coordinates.hasOwnProperty(i)) {
+    //         config2.data[0].dataPoints.push(
+    //           obj.myValueXbarChart.coordinates[i]
+    //         );
+    //       }
+    //     }
+
+    //     // USL
+    //     for (var i in obj.myUSLOfXbarChart.coordinates) {
+    //       if (obj.myUSLOfXbarChart.coordinates.hasOwnProperty(i)) {
+    //         config2.data[1].dataPoints.push(
+    //           obj.myUSLOfXbarChart.coordinates[i]
+    //         );
+    //       }
+    //     }
+
+    //     // MEAN
+    //     for (var i in obj.myMeanOfXbarChart.coordinates) {
+    //       if (obj.myMeanOfXbarChart.coordinates.hasOwnProperty(i)) {
+    //         config2.data[2].dataPoints.push(
+    //           obj.myMeanOfXbarChart.coordinates[i]
+    //         );
+    //       }
+    //     }
+
+    //     // LSL
+    //     for (var i in obj.myLSLOfXbarChart.coordinates) {
+    //       if (obj.myLSLOfXbarChart.coordinates.hasOwnProperty(i)) {
+    //         config2.data[3].dataPoints.push(
+    //           obj.myLSLOfXbarChart.coordinates[i]
+    //         );
+    //       }
+    //     }
+    //     console.log(config2.data[3].dataPoints);
+    //   },
+    // });
+
+
+  </script>
+  
+</html>
